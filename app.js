@@ -1560,7 +1560,7 @@ async function verifyMatch(missingId, foundId) {
     // Refresh live database and render
     if (typeof loadLiveDatabase === 'function') await loadLiveDatabase();
     
-    AppState.notifications.unshift({ id: \`N\${Date.now()}\`, type:'verify', title:'Identity verified', desc:\`Case \${missingId} — Match confirmed\`, time:new Date().toLocaleString('en-IN'), read:false, icon:'✅', iconBg:'#e8f5e9' });
+    AppState.notifications.unshift({ id: `N${Date.now()}`, type:'verify', title:'Identity verified', desc:`Case ${missingId} — Match confirmed`, time:new Date().toLocaleString('en-IN'), read:false, icon:'✅', iconBg:'#e8f5e9' });
     closeModal();
     showToast('Match verified! Family notification initiated.', 'success');
     renderApp();
