@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors    = require('cors');
+const path    = require('path');
 const pool    = require('./db');
 
 const app  = express();
@@ -9,9 +10,12 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+// ─── Serve Frontend Statically ────────────────────────────────────────────────
+app.use(express.static(path.join(__dirname, '..')));
+
 // ─── Root Route ───────────────────────────────────────────────────────────────
 app.get('/', (req, res) => {
-  res.send('FAMILYLINK-AI API Server is running. Access endpoints under /api');
+  res.sendFile(path.join(__dirname, '..', 'index.html'));
 });
 
 
