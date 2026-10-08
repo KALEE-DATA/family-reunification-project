@@ -1,0 +1,9 @@
+{
+  "name": "familylink-ai",
+  "version": "1.0.0",
+  "description": "FAMILYLINK-AI root package for Render deployment",
+  "scripts": {
+    "build": "cd backend && npm install",
+    "start": "cd backend && npm start"
+  }
+}
