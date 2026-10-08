@@ -1,5 +1,5 @@
 /* ============================================================
-   REUNITE-AI — Demo Data & Application State
+   FAMILYLINK-AI — Demo Data & Application State
    All data is clearly fictional / synthetic for demonstration
    ============================================================ */
 

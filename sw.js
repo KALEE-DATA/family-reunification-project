@@ -1,4 +1,4 @@
-/* REUNITE-AI Service Worker — PWA Offline Support Stub */
+/* FAMILYLINK-AI Service Worker — PWA Offline Support Stub */
 const CACHE_NAME = 'reunite-ai-v1';
 const STATIC_ASSETS = [
   '/',

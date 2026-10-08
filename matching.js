@@ -1,5 +1,5 @@
 /* ============================================================
-   REUNITE-AI — AI-Assisted Matching Engine (Prototype)
+   FAMILYLINK-AI — AI-Assisted Matching Engine (Prototype)
    Clearly labelled prototype matching logic
    Weights are illustrative, not scientifically validated
    ============================================================ */
