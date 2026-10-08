@@ -682,46 +682,62 @@ function saveMissingStep(e, step) {
   window.scrollTo(0, 0);
 }
 
-function submitMissingReport() {
+async function submitMissingReport() {
   const data = AppState.reportMissingData || {};
-  const caseId = generateCaseId();
-  const now = new Date().toISOString();
-  const newCase = {
-    id: caseId,
-    ...data,
-    status: 'MISSING',
-    priority: 'high',
-    matchId: null,
-    matchScore: null,
-    lat: 10.7905,
-    lng: 79.1600,
-    createdAt: now,
-    updatedAt: now,
-    assignedAuthority: 'Unassigned',
-    photo: null,
-    timeline: [{ status: 'MISSING', time: new Date().toLocaleString('en-IN'), by: `System (${data.reporterName})` }]
-  };
-  AppState.missingCases.push(newCase);
+  showToast('Connecting to database...', 'info');
+  
+  try {
+    const res = await fetch('/api/missing', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    });
+    const result = await res.json();
+    const caseId = result.id;
+    
+    // Create local object for matching
+    const newCase = { ...data, id: caseId, gender: data.gender || 'Unknown', status: 'MISSING', priority: 'high', lat: 10.7905, lng: 79.1600 };
+    
+    // Run matching on frontend
+    const candidates = typeof findCandidates === 'function' ? findCandidates(newCase) : [];
+    if (candidates.length > 0 && candidates[0].match.totalScore >= 60) {
+      // POST match to backend
+      await fetch('/api/matches', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          missingId: caseId,
+          foundId: candidates[0].foundPerson.id,
+          totalScore: candidates[0].match.totalScore,
+          nameScore: candidates[0].match.breakdown.name.score,
+          ageScore: candidates[0].match.breakdown.age.score,
+          genderScore: candidates[0].match.breakdown.gender.score,
+          locationScore: candidates[0].match.breakdown.location.score,
+          descScore: candidates[0].match.breakdown.description.score,
+          clothingScore: candidates[0].match.breakdown.clothing.score,
+          medicalScore: candidates[0].match.breakdown.medical.score,
+          distanceKm: candidates[0].match.distanceKm === '—' ? null : candidates[0].match.distanceKm
+        })
+      });
+    }
 
-  // Run matching
-  const candidates = findCandidates(newCase);
-  if (candidates.length > 0 && candidates[0].match.totalScore >= 60) {
-    newCase.status = 'MATCH_FOUND';
-    newCase.matchId = candidates[0].foundPerson.id;
-    newCase.matchScore = candidates[0].match.totalScore;
-    newCase.timeline.push({ status: 'MATCH_FOUND', time: new Date().toLocaleString('en-IN'), by: 'AI Matching Engine v1.2' });
+    // Refresh live database and render
+    if (typeof loadLiveDatabase === 'function') await loadLiveDatabase();
+    
+    AppState.reportMissingCaseId = caseId;
+    AppState.reportMissingSuccess = true;
+    AppState.notifications.unshift({
+      id: `N${Date.now()}`, type: 'new',
+      title: 'Missing person report registered',
+      desc: `Case ${caseId} — ${data.personName}`,
+      time: new Date().toLocaleString('en-IN'), read: false, icon: '📋', iconBg: '#fdecea'
+    });
+    renderApp();
+    showToast('Missing person report saved permanently!', 'success');
+  } catch (err) {
+    console.error(err);
+    showToast('Database connection error', 'error');
   }
-
-  AppState.reportMissingCaseId = caseId;
-  AppState.reportMissingSuccess = true;
-  AppState.notifications.unshift({
-    id: `N${Date.now()}`, type: 'new',
-    title: 'Missing person report registered',
-    desc: `Case ${caseId} — ${data.personName}`,
-    time: new Date().toLocaleString('en-IN'), read: false, icon: '📋', iconBg: '#fdecea'
-  });
-  renderApp();
-  showToast('Missing person report submitted successfully!', 'success');
 }
 
 function renderReportSuccess(type, caseId, kind) {
@@ -2547,7 +2563,12 @@ function renderApp() {
 // ============================================================
 // INIT
 // ============================================================
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  // Load real database data first
+  if (typeof loadLiveDatabase === 'function') {
+    await loadLiveDatabase();
+  }
+  
   // Initial render
   renderApp();
 
