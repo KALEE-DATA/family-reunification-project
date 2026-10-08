@@ -777,11 +777,12 @@ async function loadLiveDatabase() {
         clothingDesc: c.clothing_desc,
         medicalCondition: c.medical_cond,
         language: c.language,
-        reportedBy: c.reported_by,
+        foundBy: c.reported_by,
         facilityName: c.org_name,
-        status: c.status,
+        status: c.status === 'PENDING_MATCH' ? 'pending' : (c.status === 'MATCHED' ? 'potential' : 'verified'),
         lat: Number(c.lat),
         lng: Number(c.lng),
+        dateFound: c.created_at,
         createdAt: c.created_at
       }));
       
