@@ -1,0 +1,24 @@
+{
+  "name": "REUNITE-AI — Disaster Family Reunification",
+  "short_name": "REUNITE-AI",
+  "description": "Disaster-Affected Family Reunification System — Report, Match, Verify, Reunite",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#1a2850",
+  "theme_color": "#1a2850",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["government", "health", "emergency"],
+  "lang": "en-IN"
+}
