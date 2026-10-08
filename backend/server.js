@@ -76,7 +76,7 @@ app.post('/api/missing', async (req, res) => {
         medical_info, language, reporter_name, reporter_rel, reporter_phone, reporter_email,
         status, priority, lat, lng)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,'MISSING','normal',$20,$21)`,
-      [id, d.personName, d.age, d.gender, d.disasterType, d.disasterName, d.incidentDate,
+      [id, d.personName, d.age ? parseInt(d.age) : null, d.gender, d.disasterType, d.disasterName, d.incidentDate,
        d.district, d.state, d.lastSeenLocation, d.evacuationCentre, d.physicalDesc, d.clothingDesc,
        d.medicalInfo, d.language, d.reporterName, d.reporterRelation, d.reporterContact, d.reporterEmail,
        d.lat || null, d.lng || null]

@@ -693,6 +693,8 @@ async function submitMissingReport() {
       body: JSON.stringify(data)
     });
     const result = await res.json();
+    if (!res.ok) throw new Error(result.error || 'Server error');
+    
     const caseId = result.id;
     
     // Create local object for matching
@@ -964,6 +966,8 @@ async function submitFoundReport(e) {
       body: JSON.stringify(payload)
     });
     const result = await res.json();
+    if (!res.ok) throw new Error(result.error || 'Server error');
+    
     const fpId = result.id;
     
     // Refresh live database and render
@@ -1508,11 +1512,12 @@ async function verifyMatch(missingId, foundId) {
   showToast('Verifying match on live database...', 'info');
   try {
     if (matchId) {
-      await fetch('/api/matches/' + matchId, {
+      const res = await fetch('/api/matches/' + matchId, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'confirm', verifiedBy: AppState.currentUser?.name || 'Authorized Officer' })
       });
+      if (!res.ok) throw new Error('Failed to verify match');
     } else {
       // If no match record exists but they verified manually (not possible from UI usually, but fallback)
       showToast('Could not find match ID', 'error'); return;
