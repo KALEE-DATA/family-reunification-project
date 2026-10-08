@@ -95,7 +95,7 @@ function renderNavbar() {
   <nav class="navbar" role="navigation" aria-label="Main navigation">
     <div class="container">
       <div class="nav-brand" onclick="navigate('home')" style="cursor:pointer;" role="banner">
-        <div class="nav-logo-icon" aria-hidden="true">🔗</div>
+        <img class="nav-logo-icon" src="logo.png" alt="Family Symbol" style="background:white; padding:2px; border-radius:50%; object-fit:cover;" aria-hidden="true" />
         <div class="nav-brand-text">
           <div class="nav-brand-name">REUNITE-AI</div>
           <div class="nav-brand-sub">Disaster • Family Reunification</div>
@@ -105,9 +105,6 @@ function renderNavbar() {
         ${navLinks}
       </ul>
       <div class="nav-right">
-        <button class="btn-demo-mode" onclick="startDemoMode()" title="Load complete demo scenario">
-          ▶ Demo Mode
-        </button>
         ${AppState.isLoggedIn ? `
           <button class="btn-nav-login" onclick="navigate('notifications')" title="${unread} unread notifications">
             🔔 ${unread > 0 ? `<span style="background:#c0392b;color:#fff;border-radius:50%;padding:1px 5px;font-size:10px;">${unread}</span>` : ''}
@@ -2519,9 +2516,6 @@ function renderApp() {
   }
 
   root.innerHTML = `
-    <div class="demo-top-banner">
-      ⚠ DEMO PROTOTYPE — Not an official government service — All data is synthetic
-    </div>
     ${renderEmergencyStrip()}
     ${showNav ? renderNavbar() : ''}
     <main id="main-content" tabindex="-1">${pageContent}</main>
