@@ -76,9 +76,9 @@ app.post('/api/missing', async (req, res) => {
         medical_info, language, reporter_name, reporter_rel, reporter_phone, reporter_email,
         status, priority, lat, lng)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,'MISSING','normal',$20,$21)`,
-      [id, d.personName, d.age ? parseInt(d.age) : null, d.gender, d.disasterType, d.disasterName, d.incidentDate,
-       d.district, d.state, d.lastSeenLocation, d.evacuationCentre, d.physicalDesc, d.clothingDesc,
-       d.medicalInfo, d.language, d.reporterName, d.reporterRelation, d.reporterContact, d.reporterEmail,
+      [id, d.personName, d.age ? parseInt(d.age) : null, d.gender || null, d.disasterType || null, d.disasterName || null, d.incidentDate || null,
+       d.district || null, d.state || null, d.lastSeenLocation || null, d.evacuationCentre || null, d.physicalDesc || null, d.clothingDesc || null,
+       d.medicalInfo || null, d.language || null, d.reporterName, d.reporterRelation || null, d.reporterContact, d.reporterEmail || null,
        d.lat || null, d.lng || null]
     );
     await pool.query(
@@ -148,9 +148,9 @@ app.post('/api/found', async (req, res) => {
        (id, name_if_known, estimated_age, gender, location_name, district, state,
         physical_desc, clothing_desc, medical_cond, language, reported_by, org_name, lat, lng)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,
-      [id, d.nameIfKnown || 'Unknown', d.estimatedAge, d.gender, d.locationName,
-       d.district, d.state, d.physicalDesc, d.clothingDesc, d.medicalCondition,
-       d.language, d.reportedBy, d.orgName, d.lat || null, d.lng || null]
+      [id, d.nameIfKnown || 'Unknown', d.estimatedAge ? parseInt(d.estimatedAge) : null, d.gender || null, d.locationFound || null,
+       d.district || null, d.state || null, d.physicalDesc || null, d.clothingDesc || null, d.medicalCondition || null,
+       d.language || null, d.foundBy || null, d.facilityName || null, d.lat || null, d.lng || null]
     );
     res.status(201).json({ id, message: 'Found person record created successfully' });
   } catch (err) {
