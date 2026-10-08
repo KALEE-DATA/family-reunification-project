@@ -121,6 +121,17 @@ function computeMatch(missing, found) {
     nameSc = stringSimilarity(missing.personName, found.nameIfKnown);
   }
 
+  let photoSc = 0;
+  if (!missing.photo || !found.photo) {
+    // Redistribute photo weight if either person doesn't have a photo
+    const photoWeight = weights.photo;
+    weights.photo = 0;
+    weights.description += photoWeight * 0.5;
+    weights.clothing += photoWeight * 0.5;
+  } else {
+    photoSc = 50; // Placeholder for actual photo matching AI score
+  }
+
   const ageSc      = ageSimilarity(missing.age, found.estimatedAge);
   const genderSc   = genderMatch(missing.gender, found.gender);
   const locSc      = locationScore(missing.lat, missing.lng, found.lat, found.lng);
@@ -138,7 +149,7 @@ function computeMatch(missing, found) {
     clothingSc * weights.clothing +
     medicalSc  * weights.medical  +
     timelineSc * weights.timeline +
-    50         * weights.photo    // placeholder
+    photoSc    * weights.photo
   );
 
   const distKm = (missing.lat && found.lat)
@@ -156,7 +167,7 @@ function computeMatch(missing, found) {
       clothing:    { score: clothingSc, weight: weights.clothing,    label: 'Clothing Description' },
       medical:     { score: medicalSc,  weight: weights.medical,     label: 'Medical Information' },
       timeline:    { score: timelineSc, weight: weights.timeline,    label: 'Timeline Consistency' },
-      photo:       { score: 50,         weight: weights.photo,       label: 'Photo Similarity (Placeholder)' }
+      photo:       { score: photoSc,    weight: weights.photo,       label: 'Photo Similarity (Placeholder)' }
     },
     distanceKm: distKm
   };
