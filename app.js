@@ -774,7 +774,7 @@ function renderReportSuccess(type, caseId, kind) {
         <p style="font-size:13px;color:var(--gov-text-light);margin:16px 0;">Save your case reference number. You can use it to track your case status at any time.</p>
         <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:16px;">
           <button class="btn btn-primary" onclick="navigate('track',{trackId:'${caseId}',trackResult:null})">📋 Track This Case</button>
-          <button class="btn btn-secondary" onclick="resetMissingForm()">Submit Another Report</button>
+          <button class="btn btn-secondary" onclick="${type === 'MISSING' ? 'resetMissingForm()' : 'resetFoundForm()'}">Submit Another Report</button>
           <button class="btn btn-secondary" onclick="navigate('home')">Return to Home</button>
         </div>
       </div>
@@ -787,6 +787,12 @@ function resetMissingForm() {
   AppState.reportMissingData = {};
   AppState.reportMissingSuccess = false;
   AppState.reportMissingCaseId = null;
+  renderApp();
+}
+
+function resetFoundForm() {
+  AppState.reportFoundSuccess = false;
+  AppState.reportFoundId = null;
   renderApp();
 }
 
@@ -1358,7 +1364,7 @@ function renderCandidateMatches(missing) {
     return `
     <div class="notice-box notice-info" style="margin-top:12px;">
       <span class="notice-icon">ℹ️</span>
-      <div>No candidate matches found above threshold (40%) for this case at this time. As more found-person records are registered, the system will continue searching.</div>
+      <div>No candidate matches found above threshold (10%) for this case at this time. As more found-person records are registered, the system will continue searching.</div>
     </div>`;
   }
 

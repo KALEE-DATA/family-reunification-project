@@ -156,10 +156,16 @@ function findCandidates(missingCase) {
   const candidates = [];
   for (const fp of AppState.foundPersons) {
     if (fp.status === 'reunited' || fp.status === 'rejected') continue;
-    if (fp.gender && missingCase.gender &&
-        fp.gender.toLowerCase() !== missingCase.gender.toLowerCase()) continue;
+    
+    // Skip only if both genders are known and they don't match
+    const fpG = fp.gender ? fp.gender.toLowerCase() : null;
+    const mcG = missingCase.gender ? missingCase.gender.toLowerCase() : null;
+    if (fpG && mcG && fpG !== 'unknown' && mcG !== 'unknown' && fpG !== mcG) {
+      continue;
+    }
+    
     const match = computeMatch(missingCase, fp);
-    if (match.totalScore >= 40) {
+    if (match.totalScore >= 10) { // Lowered threshold for prototype testing
       candidates.push({ foundPerson: fp, match });
     }
   }
