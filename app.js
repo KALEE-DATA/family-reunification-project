@@ -63,7 +63,6 @@ function renderEmergencyStrip() {
         <span style="color:rgba(255,255,255,.65);">For life-threatening emergencies, contact local emergency services (112)</span>
       </div>
       <div class="emergency-strip-right">
-        <span class="demo-badge">Demo Prototype</span>
         ${AppState.isOffline ? '<span class="offline-badge">● OFFLINE</span>' : ''}
       </div>
     </div>
@@ -95,7 +94,9 @@ function renderNavbar() {
   <nav class="navbar" role="navigation" aria-label="Main navigation">
     <div class="container">
       <div class="nav-brand" onclick="navigate('home')" style="cursor:pointer;" role="banner">
-        <img class="nav-logo-icon" src="logo.png" alt="Family Symbol" style="background:white; padding:2px; border-radius:50%; object-fit:cover;" aria-hidden="true" />
+        <div class="nav-logo-icon" aria-hidden="true" style="background:#fff; border-radius:50%; width:44px; height:44px; display:flex; align-items:center; justify-content:center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); overflow:hidden; border:2px solid var(--white);">
+          <img src="logo.png" alt="FAMILYLINK-AI Logo" style="width:100%; height:100%; object-fit:cover;" />
+        </div>
         <div class="nav-brand-text">
           <div class="nav-brand-name">FAMILYLINK-AI</div>
           <div class="nav-brand-sub">Disaster • Family Reunification</div>
