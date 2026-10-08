@@ -3,6 +3,7 @@ const express = require('express');
 const cors    = require('cors');
 const path    = require('path');
 const pool    = require('./db');
+const { sendReunificationAlert } = require('./notifications');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -221,6 +222,20 @@ app.patch('/api/matches/:id', async (req, res) => {
         'INSERT INTO case_timeline (case_id, case_type, status, performed_by) VALUES ($1,$2,$3,$4)',
         [match.missing_id, 'missing', 'REUNITED', verifiedBy]
       );
+      
+      // Fetch missing case info for notification
+      const caseRes = await pool.query('SELECT * FROM missing_cases WHERE id=$1', [match.missing_id]);
+      if (caseRes.rows.length > 0) {
+        const mc = caseRes.rows[0];
+        // Trigger Email, WhatsApp, and SMS asynchronously
+        sendReunificationAlert({
+          caseId: mc.id,
+          personName: mc.person_name,
+          reporterName: mc.reporter_name,
+          reporterPhone: mc.reporter_phone,
+          reporterEmail: mc.reporter_email
+        }).catch(err => console.error('Notification error:', err));
+      }
     } else {
       await pool.query('UPDATE missing_cases SET status=$1, match_id=NULL, match_score=NULL, updated_at=NOW() WHERE id=$2', ['MISSING', match.missing_id]);
       await pool.query('UPDATE found_persons  SET status=$1, updated_at=NOW() WHERE id=$2', ['PENDING_MATCH', match.found_id]);
