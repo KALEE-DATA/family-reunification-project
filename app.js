@@ -1804,6 +1804,50 @@ function renderMatchQueue() {
   </div>`;
 }
 
+window.openFoundPersonMatches = function(fpId) {
+  const fp = AppState.foundPersons.find(f => f.id === fpId);
+  if (!fp) return;
+  const candidates = [];
+  for (const mc of AppState.missingCases) {
+    if (mc.status === 'REUNITED') continue;
+    
+    const fpG = fp.gender ? fp.gender.toLowerCase() : null;
+    const mcG = mc.gender ? mc.gender.toLowerCase() : null;
+    if (fpG && mcG && fpG !== 'unknown' && mcG !== 'unknown' && fpG !== mcG) {
+      continue;
+    }
+    
+    const match = computeMatch(mc, fp);
+    if (match.totalScore >= 10) candidates.push({ mc, match });
+  }
+  candidates.sort((a, b) => b.match.totalScore - a.match.totalScore);
+
+  let html = `<div style="margin-bottom:12px;"><strong>Finding matches for:</strong> ${fp.nameIfKnown || 'Unknown'} (${fp.id})</div>`;
+  if (candidates.length === 0) {
+    html += `<div class="notice-box notice-info"><span class="notice-icon">ℹ️</span><div>No missing cases match this person above the 10% threshold.</div></div>`;
+  } else {
+    html += `<div style="display:flex;flex-direction:column;gap:8px;max-height:60vh;overflow-y:auto;padding-right:8px;">`;
+    candidates.slice(0, 5).forEach((c, i) => {
+      html += `
+        <div style="border:1px solid #e0e6ed;padding:12px;border-radius:6px;background:#f8fafc;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-weight:700;color:var(--gov-navy)">Match #${i+1}: ${c.mc.personName} (${c.mc.id})</div>
+              <div style="font-size:12px;color:var(--gov-text-light);margin-top:2px;">Missing from: ${c.mc.district} | Reported by: ${c.mc.reporterRelation}</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:18px;font-weight:800;color:${c.match.totalScore>=70?'#1e7e34':(c.match.totalScore>=55?'#f39c12':'#c0392b')};">${c.match.totalScore}%</div>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm" style="margin-top:12px;width:100%;" onclick="closeModal(); AppState.selectedMissingId='${c.mc.id}'; navigate('matching')">🤖 View Full Analysis</button>
+        </div>
+      `;
+    });
+    html += `</div>`;
+  }
+  openModal('Potential Matches', html, `<button class="btn btn-secondary" onclick="closeModal()">Close</button>`);
+};
+
 function renderFoundPersonsTable() {
   return `
   <div>
@@ -1826,7 +1870,7 @@ function renderFoundPersonsTable() {
               <td><span class="status-badge ${getStatusClass(f.status)}">${getStatusLabel(f.status)}</span></td>
               <td>
                 ${f.matchedTo ? `<button class="btn btn-primary btn-sm" onclick="openVerificationModal('${f.matchedTo}','${f.id}',${AppState.missingCases.find(c=>c.id===f.matchedTo)?.matchScore||0})">Verify</button>` :
-                  `<button class="btn btn-secondary btn-sm" onclick="navigate('matching')">Find Match</button>`}
+                  `<button class="btn btn-secondary btn-sm" onclick="window.openFoundPersonMatches('${f.id}')">Find Match</button>`}
               </td>
             </tr>`).join('')}
         </tbody>
