@@ -2,7 +2,7 @@ const twilio = require('twilio');
 const nodemailer = require('nodemailer');
 
 // Twilio Config (SMS & WhatsApp)
-const accountSid = process.env.TWILIO_ACCOUNT_SID || 'dummy_sid';
+const accountSid = process.env.TWILIO_ACCOUNT_SID || 'ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX';
 const authToken = process.env.TWILIO_AUTH_TOKEN || 'dummy_token';
 const twilioPhone = process.env.TWILIO_PHONE_NUMBER || '+1234567890';
 const twilioWhatsapp = process.env.TWILIO_WHATSAPP_NUMBER || 'whatsapp:+14155238886';
@@ -26,7 +26,7 @@ async function sendReunificationAlert(caseData) {
   // 1. Send SMS
   if (reporterPhone && reporterPhone.length > 5) {
     try {
-      if (accountSid !== 'dummy_sid') {
+      if (!accountSid.includes('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')) {
         await twilioClient.messages.create({
           body: messageText,
           from: twilioPhone,
@@ -42,7 +42,7 @@ async function sendReunificationAlert(caseData) {
 
     // 2. Send WhatsApp
     try {
-      if (accountSid !== 'dummy_sid') {
+      if (!accountSid.includes('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX')) {
         await twilioClient.messages.create({
           body: messageText,
           from: twilioWhatsapp,
