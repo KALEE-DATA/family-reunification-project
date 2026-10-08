@@ -1513,31 +1513,60 @@ function openVerificationModal(missingId, foundId, score) {
 
 async function verifyMatch(missingId, foundId) {
   const match = AppState.matchQueue.find(m => m.missingId === missingId && m.foundId === foundId);
-  const matchId = match ? match.id : null;
+  let matchId = match ? match.id : null;
   
   showToast('Verifying match on live database...', 'info');
   try {
-    if (matchId) {
-      const res = await fetch('/api/matches/' + matchId, {
-        method: 'PATCH',
+    if (!matchId) {
+      const missing = AppState.missingCases.find(c => c.id === missingId);
+      const found = AppState.foundPersons.find(f => f.id === foundId);
+      if (!missing || !found) {
+        showToast('Case details not found locally', 'error');
+        return;
+      }
+      
+      const computed = typeof computeMatch === 'function' ? computeMatch(missing, found) : { totalScore: 0, breakdown: { name: {score:0}, age: {score:0}, gender: {score:0}, location: {score:0}, description: {score:0}, clothing: {score:0}, medical: {score:0} }, distanceKm: '—' };
+      const dist = computed.distanceKm === '—' ? null : parseFloat(computed.distanceKm);
+
+      const createRes = await fetch('/api/matches', {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'confirm', verifiedBy: AppState.currentUser?.name || 'Authorized Officer' })
+        body: JSON.stringify({
+          missingId,
+          foundId,
+          totalScore: computed.totalScore,
+          nameScore: computed.breakdown.name.score,
+          ageScore: computed.breakdown.age.score,
+          genderScore: computed.breakdown.gender.score,
+          locationScore: computed.breakdown.location.score,
+          descScore: computed.breakdown.description.score,
+          clothingScore: computed.breakdown.clothing.score,
+          medicalScore: computed.breakdown.medical.score,
+          distanceKm: dist
+        })
       });
-      if (!res.ok) throw new Error('Failed to verify match');
-    } else {
-      // If no match record exists but they verified manually (not possible from UI usually, but fallback)
-      showToast('Could not find match ID', 'error'); return;
+      if (!createRes.ok) throw new Error('Failed to create match record');
+      const createData = await createRes.json();
+      matchId = createData.id;
     }
+
+    const res = await fetch('/api/matches/' + matchId, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'confirm', verifiedBy: AppState.currentUser?.name || 'Authorized Officer' })
+    });
+    if (!res.ok) throw new Error('Failed to verify match');
     
     // Refresh live database and render
     if (typeof loadLiveDatabase === 'function') await loadLiveDatabase();
     
-    AppState.notifications.unshift({ id: `N${Date.now()}`, type:'verify', title:'Identity verified', desc:`Case ${missingId} — Match confirmed`, time:new Date().toLocaleString('en-IN'), read:false, icon:'✅', iconBg:'#e8f5e9' });
+    AppState.notifications.unshift({ id: \`N\${Date.now()}\`, type:'verify', title:'Identity verified', desc:\`Case \${missingId} — Match confirmed\`, time:new Date().toLocaleString('en-IN'), read:false, icon:'✅', iconBg:'#e8f5e9' });
     closeModal();
     showToast('Match verified! Family notification initiated.', 'success');
     renderApp();
   } catch (err) {
     showToast('Database error', 'error');
+    console.error(err);
   }
 }
 
