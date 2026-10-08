@@ -1,55 +1,46 @@
-// Fast2SMS API Integration for purely SMS-based alerts in India
-// No SDK required, uses native fetch
+const nodemailer = require('nodemailer');
 
-const FAST2SMS_API_KEY = process.env.FAST2SMS_API_KEY || '';
+// Nodemailer Config (Email)
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER || '',
+    pass: process.env.EMAIL_PASS || ''
+  }
+});
 
 async function sendReunificationAlert(caseData) {
-  const { personName, reporterPhone, caseId } = caseData;
-  const messageText = `FAMILYLINK ALERT: A verified match was found for missing person: ${personName} (Case: ${caseId}). Log in or contact authorities.`;
+  const { personName, reporterName, reporterEmail, caseId } = caseData;
 
-  console.log(`[NOTIFY] Initiating SMS notification for Case ${caseId}`);
+  console.log(`[NOTIFY] Initiating Email notification for Case ${caseId}`);
 
-  if (!reporterPhone || reporterPhone.length < 10) {
-    console.log('[NOTIFY] No valid phone number provided. Skipping SMS.');
-    return;
-  }
-
-  // Extract the 10-digit number (Fast2SMS expects just the 10 digits without +91)
-  let cleanPhone = reporterPhone.replace(/\D/g, ''); // Remove non-digits
-  if (cleanPhone.length > 10 && cleanPhone.startsWith('91')) {
-    cleanPhone = cleanPhone.slice(2);
-  }
-
-  if (FAST2SMS_API_KEY) {
+  if (reporterEmail && reporterEmail.includes('@')) {
     try {
-      console.log(`[NOTIFY] Sending live SMS via Fast2SMS to ${cleanPhone}...`);
-      const response = await fetch('https://www.fast2sms.com/dev/bulkV2', {
-        method: 'POST',
-        headers: {
-          'authorization': FAST2SMS_API_KEY,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          route: 'q', // Quick SMS route
-          message: messageText,
-          language: 'english',
-          flash: 0,
-          numbers: cleanPhone
-        })
-      });
-
-      const data = await response.json();
-      if (data.return) {
-        console.log('[NOTIFY] SMS sent successfully via Fast2SMS!');
+      if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+        console.log(`[NOTIFY] Sending live Email to ${reporterEmail}...`);
+        await transporter.sendMail({
+          from: `"FAMILYLINK-AI" <${process.env.EMAIL_USER}>`,
+          to: reporterEmail,
+          subject: 'URGENT: Verified Match Found - FAMILYLINK-AI',
+          html: `
+            <h2>FAMILYLINK-AI Alert</h2>
+            <p>Dear ${reporterName || 'Family Member'},</p>
+            <p>A verified match has been found for your reported missing person, <strong>${personName}</strong> (Case ID: ${caseId}).</p>
+            <p>Please log in to your FAMILYLINK-AI dashboard or contact the local relief authorities immediately to coordinate reunification.</p>
+            <br/>
+            <p>Stay safe,<br/>The FAMILYLINK-AI Team</p>
+          `
+        });
+        console.log('[NOTIFY] Email sent successfully!');
       } else {
-        console.error('[NOTIFY Error] Fast2SMS rejected request:', data.message);
+        console.log(`[SIMULATED EMAIL] To ${reporterEmail}: URGENT: Verified Match Found...`);
+        console.log('[NOTIFY] To send real Emails, add EMAIL_USER and EMAIL_PASS to Render Environment Variables.');
       }
     } catch (err) {
-      console.error('[NOTIFY Error] SMS fetch failed:', err.message);
+      console.error('[NOTIFY Error] Email failed:', err.message);
     }
   } else {
-    console.log(`[SIMULATED SMS] To ${cleanPhone}: ${messageText}`);
-    console.log('[NOTIFY] To send real SMS, add FAST2SMS_API_KEY to Render Environment Variables.');
+    console.log('[NOTIFY] No valid email provided. Skipping.');
   }
 }
 
