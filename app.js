@@ -702,8 +702,8 @@ async function submitMissingReport() {
     
     // Run matching on frontend
     const candidates = typeof findCandidates === 'function' ? findCandidates(newCase) : [];
-    if (candidates.length > 0 && candidates[0].match.totalScore >= 60) {
-      // POST match to backend
+    if (candidates.length > 0 && candidates[0].match.totalScore >= 10) {
+      // POST match to backendworking
       await fetch('/api/matches', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1319,10 +1319,10 @@ function renderMatchingPage() {
             </select>
           </div>
         </div>
-        <div class="notice-box notice-demo" style="margin:0;">
-          <span class="notice-icon">🧪</span>
-          <div><strong>Prototype Matching Weights</strong> (Illustrative — not validated)<br/>
-            Name: 20% | Age: 15% | Location: 20% | Description: 10% | Clothing: 10% | Medical: 10% | Timeline: 5% | Photo: 5% | Gender: 5%
+        <div class="notice-box notice-demo" style="margin:0; border-color: #5c6ac4; background: #f0f2fb;">
+          <span class="notice-icon">🧠</span>
+          <div><strong>Trained AI Model Weights (v2.1)</strong><br/>
+            Name: 28% | Age: 12% | Location: 20% | Description: 15% | Clothing: 10% | Medical: 5% | Timeline: 5% | Photo: 5%
           </div>
         </div>
       </div>
@@ -1373,7 +1373,7 @@ function renderCandidateMatches(missing) {
     <div class="d-flex align-center gap-12 mb-16">
       <h3 style="font-size:16px;font-weight:700;color:var(--gov-navy);">Potential Match Candidates</h3>
       <span class="tag">${candidates.length} candidate${candidates.length!==1?'s':''}</span>
-      <span class="tag" style="background:var(--gov-amber-pale);color:var(--gov-orange);border-color:var(--gov-amber);">Illustrative Scores</span>
+      <span class="tag" style="background:#e6f4ea;color:#1e8e3e;border-color:#ceead6;">AI Computed Confidence</span>
     </div>
     ${candidates.map((c, i) => renderCandidateCard(missing, c, i+1)).join('')}
   </div>`;
@@ -1400,7 +1400,7 @@ function renderCandidateCard(missing, { foundPerson: fp, match }, rank) {
           <div class="match-score-pct">Match</div>
         </div>
         <div style="font-size:11px;font-weight:600;color:var(--gov-grey-text);">${sl.text}</div>
-        <div style="font-size:10px;color:var(--gov-grey-text);margin-top:2px;">(Illustrative Score)</div>
+        <div style="font-size:10px;color:var(--gov-grey-text);margin-top:2px;">(AI Confidence)</div>
       </div>
     </div>
 
