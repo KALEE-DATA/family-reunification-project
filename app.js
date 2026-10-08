@@ -923,7 +923,7 @@ function renderReportFound() {
   </div>`;
 }
 
-function submitFoundReport(e) {
+async function submitFoundReport(e) {
   e.preventDefault();
   const location  = document.getElementById('rf-location')?.value;
   const foundBy   = document.getElementById('rf-foundby')?.value;
@@ -933,10 +933,10 @@ function submitFoundReport(e) {
   if (!location || !foundBy || !gender || !physical || !facility) {
     showToast('Please fill in all required fields', 'error'); return;
   }
-  const fpId = generateFPId();
+  
+  showToast('Saving to live database...', 'info');
   const now  = new Date().toISOString();
-  const newFP = {
-    id: fpId,
+  const payload = {
     facilityName: facility,
     facilityType: document.getElementById('rf-facility-type')?.value,
     locationFound: location,
@@ -953,17 +953,30 @@ function submitFoundReport(e) {
     identificationInfo: document.getElementById('rf-id-info')?.value,
     notes: document.getElementById('rf-notes')?.value,
     status: 'pending',
-    matchedTo: null,
     lat: 10.8500,
-    lng: 79.0800,
-    photo: null,
-    createdAt: now
+    lng: 79.0800
   };
-  AppState.foundPersons.push(newFP);
-  AppState.reportFoundId = fpId;
-  AppState.reportFoundSuccess = true;
-  renderApp();
-  showToast('Found person record registered!', 'success');
+
+  try {
+    const res = await fetch('/api/found', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const result = await res.json();
+    const fpId = result.id;
+    
+    // Refresh live database and render
+    if (typeof loadLiveDatabase === 'function') await loadLiveDatabase();
+    
+    AppState.reportFoundId = fpId;
+    AppState.reportFoundSuccess = true;
+    renderApp();
+    showToast('Found person record registered permanently!', 'success');
+  } catch (err) {
+    console.error(err);
+    showToast('Database error', 'error');
+  }
 }
 
 // ============================================================
@@ -1488,21 +1501,33 @@ function openVerificationModal(missingId, foundId, score) {
   openModal('Human Verification Required', body, footer);
 }
 
-function verifyMatch(missingId, foundId) {
-  const mc = AppState.missingCases.find(c => c.id === missingId);
-  const fp = AppState.foundPersons.find(f => f.id === foundId);
-  if (!mc || !fp) return;
-  mc.status = 'VERIFIED';
-  mc.matchId = foundId;
-  mc.updatedAt = new Date().toISOString();
-  mc.timeline.push({ status: 'VERIFIED', time: new Date().toLocaleString('en-IN'), by: `Officer: ${AppState.currentUser?.name || 'Authorized Officer'}` });
-  mc.timeline.push({ status: 'FAMILY_NOTIFIED', time: new Date().toLocaleString('en-IN'), by: 'System Notification' });
-  fp.status = 'verified';
-  fp.matchedTo = missingId;
-  AppState.notifications.unshift({ id: `N${Date.now()}`, type:'verify', title:'Identity verified', desc:`Case ${missingId} — Match confirmed`, time:new Date().toLocaleString('en-IN'), read:false, icon:'✅', iconBg:'#e8f5e9' });
-  closeModal();
-  showToast('Match verified! Family notification initiated.', 'success');
-  renderApp();
+async function verifyMatch(missingId, foundId) {
+  const match = AppState.matchQueue.find(m => m.missingId === missingId && m.foundId === foundId);
+  const matchId = match ? match.id : null;
+  
+  showToast('Verifying match on live database...', 'info');
+  try {
+    if (matchId) {
+      await fetch('/api/matches/' + matchId, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'confirm', verifiedBy: AppState.currentUser?.name || 'Authorized Officer' })
+      });
+    } else {
+      // If no match record exists but they verified manually (not possible from UI usually, but fallback)
+      showToast('Could not find match ID', 'error'); return;
+    }
+    
+    // Refresh live database and render
+    if (typeof loadLiveDatabase === 'function') await loadLiveDatabase();
+    
+    AppState.notifications.unshift({ id: `N${Date.now()}`, type:'verify', title:'Identity verified', desc:`Case ${missingId} — Match confirmed`, time:new Date().toLocaleString('en-IN'), read:false, icon:'✅', iconBg:'#e8f5e9' });
+    closeModal();
+    showToast('Match verified! Family notification initiated.', 'success');
+    renderApp();
+  } catch (err) {
+    showToast('Database error', 'error');
+  }
 }
 
 function rejectMatch(missingId, foundId) {
