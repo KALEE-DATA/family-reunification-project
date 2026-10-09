@@ -1272,6 +1272,7 @@ function renderCaseDetail(c) {
         <div class="reunite-success-icon">🤝</div>
         <h2>Family Reunification Confirmed</h2>
         <p>This case has been successfully resolved. The family has been reunited.</p>
+        <button class="btn btn-primary mt-16" onclick="window.open('/api/reports/${c.id}', '_blank')">📥 Download Official PDF Report</button>
       </div>` : ''}
 
     <div style="margin-top:20px;display:flex;gap:12px;flex-wrap:wrap;">
@@ -1773,7 +1774,7 @@ function renderCaseManagement() {
               <td>
                 <div class="d-flex gap-4">
                   <button class="btn btn-secondary btn-sm" onclick="navigate('track',{trackId:'${c.id}',trackResult:AppState.missingCases.find(x=>x.id==='${c.id}')})">View</button>
-                  ${c.matchId ? `<button class="btn btn-primary btn-sm" onclick="openVerificationModal('${c.id}','${c.matchId}',${c.matchScore||0})">Verify</button>` : ''}
+                  ${c.status === 'REUNITED' ? `<button class="btn btn-primary btn-sm" onclick="window.open('/api/reports/${c.id}', '_blank')">📄 PDF Report</button>` : (c.matchId && c.status !== 'REUNITED' ? `<button class="btn btn-primary btn-sm" onclick="openVerificationModal('${c.id}','${c.matchId}',${c.matchScore||0})">Verify</button>` : '')}
                 </div>
               </td>
             </tr>`).join('')}
