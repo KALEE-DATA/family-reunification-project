@@ -35,6 +35,28 @@ function closeModal() {
   document.getElementById('global-modal').classList.add('hidden');
 }
 
+window.viewCaseModal = function(id) {
+  const c = AppState.missingCases.find(x => x.id === id);
+  if (!c) return;
+  const html = `
+    <div style="font-size:14px; line-height:1.6;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+        <strong>Case ID:</strong> <span style="font-family:monospace;">${c.id}</span>
+        <strong>Status:</strong> <span class="status-badge ${getStatusClass(c.status)}">${getStatusLabel(c.status)}</span>
+      </div>
+      <p><strong>Name:</strong> ${c.personName}</p>
+      <p><strong>Age & Gender:</strong> ${c.age} years old, ${c.gender}</p>
+      <p><strong>District/State:</strong> ${c.district}, ${c.state}</p>
+      <p><strong>Last Seen Location:</strong> ${c.lastSeenLocation || 'N/A'}</p>
+      <p><strong>Physical Desc:</strong> ${c.physicalDesc || 'N/A'}</p>
+      <p><strong>Clothing:</strong> ${c.clothingDesc || 'N/A'}</p>
+      <p><strong>Medical Info:</strong> ${c.medicalInfo || 'N/A'}</p>
+      <p><strong>Reporter Contact:</strong> ${c.reporterName} (${c.reporterContact} / ${c.reporterEmail})</p>
+    </div>
+  `;
+  openModal('Case Details: ' + c.personName, html, '<button class="btn btn-secondary" onclick="closeModal()">Close View</button>');
+};
+
 // ============================================================
 // NAVIGATION / ROUTING
 // ============================================================
@@ -1775,7 +1797,7 @@ function renderCaseManagement() {
               <td style="font-size:11.5px;">${formatDate(c.updatedAt)}</td>
               <td>
                 <div class="d-flex gap-4">
-                  <button class="btn btn-secondary btn-sm" onclick="navigate('track',{trackId:'${c.id}',trackResult:AppState.missingCases.find(x=>x.id==='${c.id}')})">View</button>
+                  <button class="btn btn-secondary btn-sm" onclick="viewCaseModal('${c.id}')">View</button>
                   ${c.status === 'REUNITED' ? `<button class="btn btn-primary btn-sm" onclick="window.open('/api/reports/${c.id}', '_blank')">📄 PDF Report</button>` : (c.matchId && c.status !== 'REUNITED' ? `<button class="btn btn-primary btn-sm" onclick="openVerificationModal('${c.id}','${c.matchId}',${c.matchScore||0})">Verify</button>` : '')}
                 </div>
               </td>
