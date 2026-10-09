@@ -1622,6 +1622,7 @@ function renderAuthorityDashboard() {
     { key: 'matches',  icon: '🔗', label: 'AI Match Queue' },
     { key: 'map',      icon: '🗺', label: 'Disaster Map' },
     { key: 'found',    icon: '🟢', label: 'Found Persons' },
+    { key: 'reports',  icon: '📄', label: 'Official Reports' },
     { key: 'audit',    icon: '📝', label: 'Audit Log' }
   ];
 
@@ -1667,6 +1668,7 @@ function renderAuthorityDashboard() {
       ${activeTab === 'matches'  ? renderMatchQueue() : ''}
       ${activeTab === 'map'      ? renderDisasterMap() : ''}
       ${activeTab === 'found'    ? renderFoundPersonsTable() : ''}
+      ${activeTab === 'reports'  ? renderReportsTab() : ''}
       ${activeTab === 'audit'    ? renderAuditPage() : ''}
     </main>
   </div>`;
@@ -1831,6 +1833,43 @@ function renderMatchQueue() {
         </div>
       </div>`;
     }).join('')}
+  </div>`;
+}
+
+function renderReportsTab() {
+  const reunitedCases = AppState.missingCases.filter(c => c.status === 'REUNITED');
+  return `
+  <div>
+    <div class="d-flex align-center gap-12 mb-16" style="flex-wrap:wrap;justify-content:space-between;">
+      <h3 style="font-size:16px;font-weight:700;color:var(--gov-navy);">Verified Reunification Reports</h3>
+      <span class="tag" style="background:#e8f5e9;color:var(--gov-green);">Official Documents Only</span>
+    </div>
+    
+    <div class="notice-box notice-info mb-16">
+      <span class="notice-icon">ℹ️</span>
+      <div>This section securely stores the official PDF dossiers for cases that have been fully verified and reunited.</div>
+    </div>
+    
+    ${reunitedCases.length === 0 ? `<div class="notice-box notice-info"><span class="notice-icon">📂</span><div>No verified reports available yet. Confirm a match to generate an official report.</div></div>` : ''}
+    
+    <div class="grid-2">
+      ${reunitedCases.map(c => `
+        <div class="bg-white border-card p-20" style="display:flex; flex-direction:column; justify-content:space-between;">
+          <div>
+            <h4 style="margin:0; font-size:15px; color:var(--gov-navy);">${c.personName}</h4>
+            <div style="font-size:12px; color:var(--gov-text-light); margin-top:4px;">Case ID: ${c.id}</div>
+            <div style="margin-top:12px; font-size:13px; border-left:2px solid var(--gov-green); padding-left:10px;">
+              <div><strong>Status:</strong> <span style="color:var(--gov-green);font-weight:bold;">REUNITED</span></div>
+              <div style="margin-top:4px;"><strong>Location:</strong> ${c.district}</div>
+              <div style="margin-top:4px;"><strong>Resolved:</strong> ${formatDate(c.updatedAt)}</div>
+            </div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:16px; width:100%; display:flex; justify-content:center; align-items:center; gap:8px;" onclick="window.open('/api/reports/${c.id}', '_blank')">
+            <span>📥</span> Download Official PDF
+          </button>
+        </div>
+      `).join('')}
+    </div>
   </div>`;
 }
 
