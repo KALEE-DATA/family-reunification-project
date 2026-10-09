@@ -63,6 +63,12 @@ window.viewCaseModal = function(id) {
 function navigate(page, extra = {}) {
   AppState.currentPage = page;
   AppState.mobileMenuOpen = false;
+  
+  // Clear track case state if navigating directly from navbar
+  if (page === 'track' && Object.keys(extra).length === 0) {
+    extra = { trackId: '', trackResult: undefined };
+  }
+  
   Object.assign(AppState, extra);
   renderApp();
   window.scrollTo(0, 0);
