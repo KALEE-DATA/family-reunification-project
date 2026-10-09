@@ -1198,7 +1198,7 @@ function renderTrackCase() {
         </div>
         <div style="margin-top:10px;font-size:13px;color:var(--gov-grey-text);">
           Quick access:
-          ${AppState.missingCases.slice(0,3).map(c => `<button onclick="AppState.trackId='${c.id}';trackCase()" style="background:none;border:none;color:var(--gov-blue);cursor:pointer;font-size:13px;text-decoration:underline;margin-left:8px;">${c.id}</button>`).join('')}
+          ${AppState.missingCases.slice(0,3).map(c => `<button onclick="trackCase('${c.id}')" style="background:none;border:none;color:var(--gov-blue);cursor:pointer;font-size:13px;text-decoration:underline;margin-left:8px;">${c.id}</button>`).join('')}
         </div>
       </div>
       ${trackResult === null ? `
@@ -1211,10 +1211,10 @@ function renderTrackCase() {
   </div>`;
 }
 
-function trackCase() {
-  const id = (document.getElementById('track-input')?.value || AppState.trackId || '').trim().toUpperCase();
+function trackCase(quickId) {
+  const id = (quickId || document.getElementById('track-input')?.value || AppState.trackId || '').trim().toUpperCase();
   AppState.trackId = id;
-  const found = AppState.missingCases.find(c => c.id === id);
+  const found = AppState.missingCases.find(c => String(c.id).trim().toUpperCase() === id);
   AppState.trackResult = found || null;
   renderApp();
 }
