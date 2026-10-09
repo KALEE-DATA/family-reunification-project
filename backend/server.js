@@ -223,17 +223,21 @@ app.patch('/api/matches/:id', async (req, res) => {
         [match.missing_id, 'missing', 'REUNITED', verifiedBy]
       );
       
-      // Fetch missing case info for notification
+      // Fetch missing case, found person, and match info for notification
       const caseRes = await pool.query('SELECT * FROM missing_cases WHERE id=$1', [match.missing_id]);
-      if (caseRes.rows.length > 0) {
+      const foundRes = await pool.query('SELECT * FROM found_persons WHERE id=$1', [match.found_id]);
+      
+      if (caseRes.rows.length > 0 && foundRes.rows.length > 0) {
         const mc = caseRes.rows[0];
-        // Trigger Email, WhatsApp, and SMS asynchronously
+        const fp = foundRes.rows[0];
+        
+        // Trigger Email asynchronously with full report data
         sendReunificationAlert({
           caseId: mc.id,
-          personName: mc.person_name,
-          reporterName: mc.reporter_name,
-          reporterPhone: mc.reporter_phone,
-          reporterEmail: mc.reporter_email
+          reporterEmail: mc.reporter_email,
+          missingPerson: mc,
+          foundPerson: fp,
+          matchDetails: match
         }).catch(err => console.error('Notification error:', err));
       }
     } else {
