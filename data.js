@@ -13,7 +13,8 @@ const foundPersons = [];
 const matchQueue = [];
 const auditLog = [];
 const disasterZones = [];
-
+const notifications = [];
+const facilities = [];
 // ============================================================
 // APP STATE
 // ============================================================
